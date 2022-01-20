@@ -5,6 +5,7 @@ from eth_utils import (
     to_dict,
 )
 import logging
+import random
 from requests import (
     RequestException,
 )
@@ -59,6 +60,7 @@ class HTTPProvider(JSONBaseProvider):
     def __init__(
         self,
         providers: Union[list, str],
+        randomize: Boolean = False,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ) -> None:
@@ -66,6 +68,7 @@ class HTTPProvider(JSONBaseProvider):
             providers = [
                 providers,
             ]
+        self.randomize = randomize
         self.providers = providers
         self._request_kwargs = request_kwargs or {}
 
@@ -92,6 +95,8 @@ class HTTPProvider(JSONBaseProvider):
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
         request_data = self.encode_rpc_request(method, params)
+        if self.randomize():
+            random.shuffle(self.providers)
         for provider in self.providers:
             provider_uri = URI(provider)
             self.logger.debug(
