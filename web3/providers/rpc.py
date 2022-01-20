@@ -58,7 +58,7 @@ class HTTPProvider(JSONBaseProvider):
 
     def __init__(
         self,
-        providers: Union[list[BaseProvider], str],
+        providers: Union[list(BaseProvider), str],
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ) -> None:
