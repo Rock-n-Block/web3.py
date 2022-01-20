@@ -95,7 +95,7 @@ class HTTPProvider(JSONBaseProvider):
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
         request_data = self.encode_rpc_request(method, params)
-        if self.randomize():
+        if self.randomize:
             random.shuffle(self.providers)
         for provider in self.providers:
             provider_uri = URI(provider)
