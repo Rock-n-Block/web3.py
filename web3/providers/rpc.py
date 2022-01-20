@@ -95,7 +95,7 @@ class HTTPProvider(JSONBaseProvider):
         for provider in self.providers:
             provider_uri = URI(provider)
             self.logger.debug(
-                "Making request HTTP. URI: %s, Method: %s", self.provider_uri, method
+                "Making request HTTP. URI: %s, Method: %s", provider_uri, method
             )
             try:
                 raw_response = make_post_request(
@@ -104,7 +104,7 @@ class HTTPProvider(JSONBaseProvider):
                 response = self.decode_rpc_response(raw_response)
                 self.logger.debug(
                     "Getting response HTTP. URI: %s, " "Method: %s, Response: %s",
-                    self.provider_uri,
+                    provider_uri,
                     method,
                     response,
                 )
