@@ -69,13 +69,13 @@ class HTTPProvider(JSONBaseProvider):
         self.providers = providers
         self._request_kwargs = request_kwargs or {}
 
-        #if session:
-        #    cache_session(self.endpoint_uri, session)
+        if session:
+            cache_session(self.providers[0], session)
 
         super().__init__()
 
     def __str__(self) -> str:
-        return "RPC connection {0}".format(self.endpoint_uri)
+        return "RPC connection {0}".format(self.providers)
 
     @to_dict
     def get_request_kwargs(self) -> Iterable[Tuple[str, Any]]:
@@ -92,7 +92,7 @@ class HTTPProvider(JSONBaseProvider):
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
         self.logger.debug(
-            "Making request HTTP. URI: %s, Method: %s", self.endpoint_uri, method
+            "Making request HTTP. URI: %s, Method: %s", self.provider_uri, method
         )
         request_data = self.encode_rpc_request(method, params)
         for provider in self.providers:
