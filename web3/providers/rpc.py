@@ -19,6 +19,7 @@ from typing import (
     Optional,
     Tuple,
     Union,
+    Boolean,
 )
 
 from web3._utils.http import (
@@ -60,7 +61,7 @@ class HTTPProvider(JSONBaseProvider):
     def __init__(
         self,
         providers: Union[list, str],
-        randomize: Boolean = False,
+        randomize: Optional[Boolean] = False,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ) -> None:
