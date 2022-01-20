@@ -8,6 +8,9 @@ import logging
 from requests import (
     RequestException,
 )
+from web3.providers import (
+    BaseProvider,
+)
 from typing import (
     Any,
     Dict,
