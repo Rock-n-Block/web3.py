@@ -9,9 +9,6 @@ import random
 from requests import (
     RequestException,
 )
-from web3.providers import (
-    BaseProvider,
-)
 from typing import (
     Any,
     Dict,
@@ -37,6 +34,9 @@ from web3.exceptions import (
 )
 from web3.middleware import (
     http_retry_request_middleware,
+)
+from web3.providers import (
+    BaseProvider,
 )
 from web3.types import (
     Middleware,
