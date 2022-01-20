@@ -99,7 +99,7 @@ class HTTPProvider(JSONBaseProvider):
             )
             try:
                 raw_response = make_post_request(
-                    URI(provider_uri), request_data, **self.get_request_kwargs()
+                    provider_uri, request_data, **self.get_request_kwargs()
                 )
                 response = self.decode_rpc_response(raw_response)
                 self.logger.debug(
