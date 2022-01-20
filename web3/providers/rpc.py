@@ -19,7 +19,6 @@ from typing import (
     Optional,
     Tuple,
     Union,
-    Boolean,
 )
 
 from web3._utils.http import (
