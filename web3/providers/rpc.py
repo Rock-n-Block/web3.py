@@ -60,7 +60,7 @@ class HTTPProvider(JSONBaseProvider):
     def __init__(
         self,
         providers: Union[list, str],
-        randomize: Optional[boole] = False,
+        randomize: Optional[bool] = False,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ) -> None:
