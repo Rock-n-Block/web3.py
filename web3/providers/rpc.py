@@ -1,4 +1,14 @@
+from eth_typing import (
+    URI,
+)
+from eth_utils import (
+    to_dict,
+)
 import logging
+import random
+from requests import (
+    RequestException,
+)
 from typing import (
     Any,
     Dict,
@@ -6,13 +16,6 @@ from typing import (
     Optional,
     Tuple,
     Union,
-)
-
-from eth_typing import (
-    URI,
-)
-from eth_utils import (
-    to_dict,
 )
 
 from web3._utils.http import (
@@ -26,8 +29,14 @@ from web3._utils.request import (
 from web3.datastructures import (
     NamedElementOnion,
 )
+from web3.exceptions import (
+    CannotHandleRequest,
+)
 from web3.middleware import (
     http_retry_request_middleware,
+)
+from web3.providers import (
+    BaseProvider,
 )
 from web3.types import (
     Middleware,
@@ -42,7 +51,7 @@ from .base import (
 
 class HTTPProvider(JSONBaseProvider):
     logger = logging.getLogger("web3.providers.HTTPProvider")
-    endpoint_uri = None
+    providers = None
     _request_args = None
     _request_kwargs = None
     # type ignored b/c conflict with _middlewares attr on BaseProvider
@@ -50,24 +59,28 @@ class HTTPProvider(JSONBaseProvider):
 
     def __init__(
         self,
-        endpoint_uri: Optional[Union[URI, str]] = None,
+        providers: Union[list, str],
+        randomize: Optional[bool] = False,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ) -> None:
-        if endpoint_uri is None:
-            self.endpoint_uri = get_default_http_endpoint()
-        else:
-            self.endpoint_uri = URI(endpoint_uri)
-
+        if isinstance(providers, str):
+            providers = [
+                providers,
+            ]
+        self.randomize = randomize
+        self.providers = providers
         self._request_kwargs = request_kwargs or {}
 
         if session:
-            cache_and_return_session(self.endpoint_uri, session)
+
+            cache_and_return_session(self.providers[0], session)
+
 
         super().__init__()
 
     def __str__(self) -> str:
-        return f"RPC connection {self.endpoint_uri}"
+        return "RPC connection {0}".format(self.providers)
 
     @to_dict
     def get_request_kwargs(self) -> Iterable[Tuple[str, Any]]:
@@ -83,16 +96,27 @@ class HTTPProvider(JSONBaseProvider):
         }
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
-        self.logger.debug(
-            f"Making request HTTP. URI: {self.endpoint_uri}, Method: {method}"
-        )
         request_data = self.encode_rpc_request(method, params)
-        raw_response = make_post_request(
-            self.endpoint_uri, request_data, **self.get_request_kwargs()
-        )
-        response = self.decode_rpc_response(raw_response)
-        self.logger.debug(
-            f"Getting response HTTP. URI: {self.endpoint_uri}, "
-            f"Method: {method}, Response: {response}"
-        )
-        return response
+        if self.randomize:
+            random.shuffle(self.providers)
+        for provider in self.providers:
+            provider_uri = URI(provider)
+            self.logger.debug(
+                "Making request HTTP. URI: %s, Method: %s", provider_uri, method
+            )
+            try:
+                raw_response = make_post_request(
+                    provider_uri, request_data, **self.get_request_kwargs()
+                )
+                response = self.decode_rpc_response(raw_response)
+                self.logger.debug(
+                    "Getting response HTTP. URI: %s, " "Method: %s, Response: %s",
+                    provider_uri,
+                    method,
+                    response,
+                )
+                return response
+            except RequestException:
+                pass
+        else:
+            raise CannotHandleRequest
