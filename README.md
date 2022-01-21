@@ -13,6 +13,11 @@ A Python library for interacting with Ethereum.
 ## Rock'N'Block Fork 
 Added support of multiple rpc nodes for HTTPProvider.
 Usage:
+choose custom source for downloading library, i.e (for installing via requirements.txt):
+```
+web3 @ git+https://github.com/Rock-n-Block/web3.py.git
+```
+
 ```python
 from web3 import Web3
 
