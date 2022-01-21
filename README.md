@@ -17,7 +17,7 @@ choose custom source for downloading library, i.e (for installing via requiremen
 ```
 web3 @ git+https://github.com/Rock-n-Block/web3.py.git
 ```
-
+initialize web3 instance in code:
 ```python
 from web3 import Web3
 
