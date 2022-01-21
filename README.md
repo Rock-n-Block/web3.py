@@ -13,7 +13,7 @@ A Python library for interacting with Ethereum, inspired by [web3.js](https://gi
 ## Rock'N'Block Fork 
 Added support of multiple rpc nodes for HTTPProvider.
 Usage:
-```
+```python
 from web3 import Web3
 
 web3 = Web3(
@@ -22,10 +22,14 @@ web3 = Web3(
     )
 )
 ```
-For a backwards compatibility you can still pass a single string rpc provider as usual, i.e. ```Web3.HTTPProvider('endpoint')```
+For a backwards compatibility you can still pass a single string rpc provider as usual, i.e. 
+```python
+Web3.HTTPProvider('endpoint')
+```
 
-For any blockchain call using web3 (simple requests like "gas_price", or contract interactions and filters,), web3 instance will try to make a call using one provider at once in cycle, and will change provider if any RequestException is thrown. If all endpoints are invalid, built-in "CannotHandleRequest" Exception is thrown.
+For any blockchain call using web3 (simple requests like **"gas_price"**, or contract interactions and filters,), web3 instance will try to make a call using one provider at once in cycle, and will change provider if any RequestException is thrown. If all endpoints are invalid, built-in **"CannotHandleRequest"** Exception is thrown.
 
+Additionally, you can use some kind of node balancing, passing **"randomize=True"** in HTTPProvider initialization. In this case, every time you make a call, nodes are shuffled randomly, meaning that requests will be shared between them (instead of logic "call first infura unless it passes out, after that go to the second one").
 
 ## Quickstart
 
