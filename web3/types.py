@@ -2,6 +2,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Coroutine,
     Dict,
     List,
     NewType,
@@ -135,13 +136,14 @@ class RPCResponse(TypedDict, total=False):
 
 
 Middleware = Callable[[Callable[[RPCEndpoint, Any], RPCResponse], "Web3"], Any]
+AsyncMiddleware = Callable[[RPCEndpoint, Any], Coroutine[Any, Any, RPCResponse]]
 MiddlewareOnion = NamedElementOnion[str, Middleware]
 
 
 class FormattersDict(TypedDict, total=False):
-    error_formatters: Formatters
-    request_formatters: Formatters
-    result_formatters: Formatters
+    error_formatters: Optional[Formatters]
+    request_formatters: Optional[Formatters]
+    result_formatters: Optional[Formatters]
 
 
 class FilterParams(TypedDict, total=False):
@@ -181,7 +183,7 @@ TxData = TypedDict("TxData", {
     "chainId": int,
     "data": Union[bytes, HexStr],
     "from": ChecksumAddress,
-    "gas": Wei,
+    "gas": int,
     "gasPrice": Wei,
     "maxFeePerGas": Wei,
     "maxPriorityFeePerGas": Wei,
@@ -204,7 +206,7 @@ TxParams = TypedDict("TxParams", {
     "data": Union[bytes, HexStr],
     # addr or ens
     "from": Union[Address, ChecksumAddress, str],
-    "gas": Wei,
+    "gas": int,
     # legacy pricing
     "gasPrice": Wei,
     # dynamic fee pricing
@@ -235,8 +237,8 @@ TxReceipt = TypedDict("TxReceipt", {
     "blockNumber": BlockNumber,
     "contractAddress": Optional[ChecksumAddress],
     "cumulativeGasUsed": int,
-    "effectiveGasPrice": int,
-    "gasUsed": Wei,
+    "effectiveGasPrice": Wei,
+    "gasUsed": int,
     "from": ChecksumAddress,
     "logs": List[LogReceipt],
     "logsBloom": HexBytes,
@@ -306,8 +308,8 @@ class BlockData(TypedDict, total=False):
     baseFeePerGas: Wei
     difficulty: int
     extraData: HexBytes
-    gasLimit: Wei
-    gasUsed: Wei
+    gasLimit: int
+    gasUsed: int
     hash: HexBytes
     logsBloom: HexBytes
     miner: ChecksumAddress

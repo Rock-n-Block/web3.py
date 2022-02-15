@@ -49,6 +49,10 @@ from web3._utils.empty import (
 from web3._utils.encoding import (
     to_hex,
 )
+from web3._utils.fee_utils import (
+    async_fee_history_priority_fee,
+    fee_history_priority_fee,
+)
 from web3._utils.filters import (
     select_filter_method,
 )
@@ -117,7 +121,6 @@ class BaseEth(Module):
         mungers=None,
     )
 
-    """ property default_block """
     @property
     def default_block(self) -> BlockIdentifier:
         return self._default_block
@@ -127,8 +130,44 @@ class BaseEth(Module):
         self._default_block = value
 
     @property
+    def defaultBlock(self) -> BlockIdentifier:
+        warnings.warn(
+            'defaultBlock is deprecated in favor of default_block',
+            category=DeprecationWarning,
+        )
+        return self._default_block
+
+    @defaultBlock.setter
+    def defaultBlock(self, value: BlockIdentifier) -> None:
+        warnings.warn(
+            'defaultBlock is deprecated in favor of default_block',
+            category=DeprecationWarning,
+        )
+        self._default_block = value
+
+    @property
     def default_account(self) -> Union[ChecksumAddress, Empty]:
         return self._default_account
+
+    @default_account.setter
+    def default_account(self, account: Union[ChecksumAddress, Empty]) -> None:
+        self._default_account = account
+
+    @property
+    def defaultAccount(self) -> Union[ChecksumAddress, Empty]:
+        warnings.warn(
+            'defaultAccount is deprecated in favor of default_account',
+            category=DeprecationWarning,
+        )
+        return self._default_account
+
+    @defaultAccount.setter
+    def defaultAccount(self, account: Union[ChecksumAddress, Empty]) -> None:
+        warnings.warn(
+            'defaultAccount is deprecated in favor of default_account',
+            category=DeprecationWarning,
+        )
+        self._default_account = account
 
     def send_transaction_munger(self, transaction: TxParams) -> Tuple[TxParams]:
         if 'from' not in transaction and is_checksum_address(self.default_account):
@@ -192,7 +231,7 @@ class BaseEth(Module):
 
         return params
 
-    _estimate_gas: Method[Callable[..., Wei]] = Method(
+    _estimate_gas: Method[Callable[..., int]] = Method(
         RPC.eth_estimateGas,
         mungers=[estimate_gas_munger]
     )
@@ -283,6 +322,11 @@ class BaseEth(Module):
         mungers=None,
     )
 
+    _is_syncing: Method[Callable[[], Union[SyncStatus, bool]]] = Method(
+        RPC.eth_syncing,
+        mungers=None,
+    )
+
     _get_transaction_receipt: Method[Callable[[_Hash32], TxReceipt]] = Method(
         RPC.eth_getTransactionReceipt,
         mungers=[default_root_munger]
@@ -321,11 +365,26 @@ class AsyncEth(BaseEth):
 
     @property
     async def max_priority_fee(self) -> Wei:
-        return await self._max_priority_fee()  # type: ignore
+        """
+        Try to use eth_maxPriorityFeePerGas but, since this is not part of the spec and is only
+        supported by some clients, fall back to an eth_feeHistory calculation with min and max caps.
+        """
+        try:
+            return await self._max_priority_fee()  # type: ignore
+        except ValueError:
+            warnings.warn(
+                "There was an issue with the method eth_maxPriorityFeePerGas. Calculating using "
+                "eth_feeHistory."
+            )
+            return await async_fee_history_priority_fee(self)
 
     @property
     async def mining(self) -> bool:
         return await self._is_mining()  # type: ignore
+
+    @property
+    async def syncing(self) -> Union[SyncStatus, bool]:
+        return await self._is_syncing()  # type: ignore
 
     async def fee_history(
             self,
@@ -367,7 +426,7 @@ class AsyncEth(BaseEth):
         self,
         transaction: TxParams,
         block_identifier: Optional[BlockIdentifier] = None
-    ) -> Wei:
+    ) -> int:
         # types ignored b/c mypy conflict with BlockingEth properties
         return await self._estimate_gas(transaction, block_identifier)  # type: ignore
 
@@ -400,6 +459,17 @@ class AsyncEth(BaseEth):
         block_identifier: Optional[BlockIdentifier] = None
     ) -> HexBytes:
         return await self._get_code(account, block_identifier)
+
+    _get_logs: Method[Callable[[FilterParams], Awaitable[List[LogReceipt]]]] = Method(
+        RPC.eth_getLogs,
+        mungers=[default_root_munger]
+    )
+
+    async def get_logs(
+        self,
+        filter_params: FilterParams,
+    ) -> List[LogReceipt]:
+        return await self._get_logs(filter_params)
 
     _get_transaction_count: Method[Callable[..., Awaitable[Nonce]]] = Method(
         RPC.eth_getTransactionCount,
@@ -490,14 +560,9 @@ class Eth(BaseEth):
         )
         return self.protocol_version
 
-    is_syncing: Method[Callable[[], Union[SyncStatus, bool]]] = Method(
-        RPC.eth_syncing,
-        mungers=None,
-    )
-
     @property
     def syncing(self) -> Union[SyncStatus, bool]:
-        return self.is_syncing()
+        return self._is_syncing()
 
     @property
     def coinbase(self) -> ChecksumAddress:
@@ -551,55 +616,25 @@ class Eth(BaseEth):
         )
         return self.chain_id
 
-    """ property default_account """
-    @property
-    def default_account(self) -> Union[ChecksumAddress, Empty]:
-        return self._default_account
-
-    @default_account.setter
-    def default_account(self, account: Union[ChecksumAddress, Empty]) -> None:
-        self._default_account = account
-
-    @property
-    def defaultAccount(self) -> Union[ChecksumAddress, Empty]:
-        warnings.warn(
-            'defaultAccount is deprecated in favor of default_account',
-            category=DeprecationWarning,
-        )
-        return self._default_account
-
-    @defaultAccount.setter
-    def defaultAccount(self, account: Union[ChecksumAddress, Empty]) -> None:
-        warnings.warn(
-            'defaultAccount is deprecated in favor of default_account',
-            category=DeprecationWarning,
-        )
-        self._default_account = account
-
     get_balance: Method[Callable[..., Wei]] = Method(
         RPC.eth_getBalance,
         mungers=[BaseEth.block_id_munger],
     )
 
     @property
-    def defaultBlock(self) -> BlockIdentifier:
-        warnings.warn(
-            'defaultBlock is deprecated in favor of default_block',
-            category=DeprecationWarning,
-        )
-        return self._default_block
-
-    @defaultBlock.setter
-    def defaultBlock(self, value: BlockIdentifier) -> None:
-        warnings.warn(
-            'defaultBlock is deprecated in favor of default_block',
-            category=DeprecationWarning,
-        )
-        self._default_block = value
-
-    @property
     def max_priority_fee(self) -> Wei:
-        return self._max_priority_fee()
+        """
+        Try to use eth_maxPriorityFeePerGas but, since this is not part of the spec and is only
+        supported by some clients, fall back to an eth_feeHistory calculation with min and max caps.
+        """
+        try:
+            return self._max_priority_fee()
+        except ValueError:
+            warnings.warn(
+                "There was an issue with the method eth_maxPriorityFeePerGas. Calculating using "
+                "eth_feeHistory."
+            )
+            return fee_history_priority_fee(self)
 
     def get_storage_at_munger(
         self,
@@ -816,7 +851,7 @@ class Eth(BaseEth):
         self,
         transaction: TxParams,
         block_identifier: Optional[BlockIdentifier] = None
-    ) -> Wei:
+    ) -> int:
         return self._estimate_gas(transaction, block_identifier)
 
     def fee_history(

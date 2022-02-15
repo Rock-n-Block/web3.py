@@ -3,6 +3,93 @@ Release Notes
 
 .. towncrier release notes start
 
+v5.28.0 (2022-02-09)
+--------------------
+
+Features
+~~~~~~~~
+
+- Added Async functions for Geth Personal and Admin modules (`#1413
+  <https://github.com/ethereum/web3.py/issues/1413>`__)
+- async support for formatting, validation, and geth poa middlewares (`#2098
+  <https://github.com/ethereum/web3.py/issues/2098>`__)
+- Calculate a default ``maxPriorityFeePerGas`` using ``eth_feeHistory`` when
+  ``eth_maxPriorityFeePerGas`` is not available, since the latter is not a part
+  of the Ethereum JSON-RPC specs and only supported by certain clients. (`#2259
+  <https://github.com/ethereum/web3.py/issues/2259>`__)
+- Allow NamedTuples in ABI inputs (`#2312
+  <https://github.com/ethereum/web3.py/issues/2312>`__)
+- Add async `eth.syncing` method (`#2331
+  <https://github.com/ethereum/web3.py/issues/2331>`__)
+
+
+Bugfixes
+~~~~~~~~
+
+- remove `ens.utils.dict_copy` decorator (`#1423
+  <https://github.com/ethereum/web3.py/issues/1423>`__)
+- The exception retry middleware whitelist was missing a comma between
+  ``txpool`` and ``testing`` (`#2327
+  <https://github.com/ethereum/web3.py/issues/2327>`__)
+- Properly initialize external modules that do not inherit from the
+  ``web3.module.Module`` class (`#2328
+  <https://github.com/ethereum/web3.py/issues/2328>`__)
+
+
+v5.27.0 (2022-01-31)
+--------------------
+
+Features
+~~~~~~~~
+
+- Added Async functions for Geth TxPool (`#1413
+  <https://github.com/ethereum/web3.py/issues/1413>`__)
+- external modules are no longer required to inherit from the
+  ``web3.module.Module`` class (`#2304
+  <https://github.com/ethereum/web3.py/issues/2304>`__)
+- Add async `eth.get_logs` method (`#2310
+  <https://github.com/ethereum/web3.py/issues/2310>`__)
+- add Async access to `default_account` and `default_block` (`#2315
+  <https://github.com/ethereum/web3.py/issues/2315>`__)
+- Update eth-tester and eth-account dependencies to pull in bugfix from
+  eth-keys (`#2320 <https://github.com/ethereum/web3.py/issues/2320>`__)
+
+
+Bugfixes
+~~~~~~~~
+
+- Fixed issues with parsing tuples and nested tuples in event logs (`#2211
+  <https://github.com/ethereum/web3.py/issues/2211>`__)
+- In ENS the contract function to resolve an ENS address was being called twice
+  in error. One of those calls was removed. (`#2318
+  <https://github.com/ethereum/web3.py/issues/2318>`__)
+- ``to_hexbytes`` block formatters no longer throw when value is ``None``
+  (`#2321 <https://github.com/ethereum/web3.py/issues/2321>`__)
+
+
+Improved Documentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+- fix typo in `eth.account` docs (`#2111
+  <https://github.com/ethereum/web3.py/issues/2111>`__)
+- explicitly add `output_values` to contracts example (`#2293
+  <https://github.com/ethereum/web3.py/issues/2293>`__)
+- update imports for `AsyncHTTPProvider` sample code (`#2302
+  <https://github.com/ethereum/web3.py/issues/2302>`__)
+- fixed broken link to filter schema (`#2303
+  <https://github.com/ethereum/web3.py/issues/2303>`__)
+- add github link to the main docs landing page (`#2313
+  <https://github.com/ethereum/web3.py/issues/2313>`__)
+- fix typos and update referenced `geth` version (`#2326
+  <https://github.com/ethereum/web3.py/issues/2326>`__)
+
+
+Misc
+~~~~
+
+- `#2217 <https://github.com/ethereum/web3.py/issues/2217>`__
+
+
 v5.26.0 (2022-01-06)
 --------------------
 
