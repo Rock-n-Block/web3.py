@@ -9,6 +9,7 @@ import random
 from requests import (
     RequestException,
 )
+from datetime import datetime
 from typing import (
     Any,
     Dict,
@@ -64,6 +65,7 @@ class HTTPProvider(JSONBaseProvider):
         randomize: Optional[bool] = False,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
+        block_timeout_sec: Optional[int] = None,
     ) -> None:
         if isinstance(providers, str):
             providers = [
@@ -72,6 +74,7 @@ class HTTPProvider(JSONBaseProvider):
         self.randomize = randomize
         self.providers = providers
         self._request_kwargs = request_kwargs or {}
+        self.block_timeout_sec = block_timeout_sec
 
         if session:
             cache_session(self.providers[0], session)
@@ -104,6 +107,23 @@ class HTTPProvider(JSONBaseProvider):
                 "Making request HTTP. URI: %s, Method: %s", provider_uri, method
             )
             try:
+                if self.block_timeout_sec:
+                    request_data_for_block = self.encode_rpc_request(
+                        "eth_getBlockByNumber", ("latest", False)
+                    )
+                    raw_response = make_post_request(
+                        provider_uri,
+                        request_data_for_block,
+                        **self.get_request_kwargs()
+                    )
+                    response = self.decode_rpc_response(raw_response)
+                    last_block_timestamp = int(
+                        response.get("result").get("timestamp"), base=16
+                    )
+                    now_timestamp = datetime.now().timestamp()
+                    if now_timestamp - last_block_timestamp > self.block_timeout_sec:
+                        continue
+
                 raw_response = make_post_request(
                     provider_uri, request_data, **self.get_request_kwargs()
                 )
