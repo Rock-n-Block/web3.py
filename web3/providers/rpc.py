@@ -52,7 +52,7 @@ from .base import (
 class HTTPProvider(JSONBaseProvider):
     logger = logging.getLogger("web3.providers.HTTPProvider")
     providers = None
-    randomize = False
+    randomize = True
     _request_args = None
     _request_kwargs = None
     # type ignored b/c conflict with _middlewares attr on BaseProvider
