@@ -71,7 +71,7 @@ setup(
     install_requires=[
         "aiohttp>=3.7.4.post0",
         "eth-abi>=3.0.0",
-        "eth-account>=0.8.0",
+        "eth-account>=0.4.0",
         "eth-hash[pycryptodome]>=0.5.1",
         "eth-typing>=2.2.2",
         "eth-utils>=1.9.5",
